@@ -1,0 +1,86 @@
+import calendar
+import datetime
+import tkinter as tk
+from tkcalendar import DateEntry
+class CalendarApp:
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Календарь")
+        self.current_date = datetime.date.today()
+        self.create_widgets()
+    def create_widgets(self):
+ # Создаем заголовок с месяцем и годом
+        self.header_label = tk.Label(self.window, text="", font=("Arial", 12, "bold"))
+        self.header_label.pack()
+# Кнопки для переключения месяцев
+        button_frame = tk.Frame(self.window)
+        button_frame.pack()
+        tk.Button(button_frame, text="Предыдущий месяц", command=self.prev_month).pack(side=tk.LEFT)
+        tk.Button(button_frame, text="Следующий месяц", command=self.next_month).pack(side=tk.LEFT)
+# Кнопка для добавления события
+        tk.Button(self.window, text="Добавить событие", command=self.add_event).pack()
+# Сетка календаря
+        self.calendar_frame = tk.Frame(self.window)
+        self.calendar_frame.pack()
+        self.update_calendar()
+    def update_calendar(self):
+# Очищаем предыдущий календарь
+        for widget in self.calendar_frame.winfo_children():
+            widget.destroy()
+# Получаем календарь на текущий месяц и год
+        cal = calendar.monthcalendar(self.current_date.year, self.current_date.month)
+        today = datetime.date.today().day
+# Обновляем заголовок с текущим месяцем и годом
+        self.header_label.config(text=calendar.month_name[self.current_date.month] + " " + str(self.current_date.year))
+# Создаем сетку календаря
+        weekday_labels = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
+        for weekday in weekday_labels:
+            tk.Label(self.calendar_frame, text=weekday, width=4, font=("Arial", 9, "bold")).grid(row=0, column=weekday_labels.index(weekday))
+        for week_num, week in enumerate(cal, start=1):
+            for day_num, day in enumerate(week, start=1):
+                if day == 0:
+                    continue
+                if day == today and self.current_date.month == datetime.date.today().month:
+                    bg_color = "yellow"
+                else:
+                    bg_color = "white"
+                day_label = tk.Label(self.calendar_frame, text=str(day), width=4, bg=bg_color)
+                day_label.grid(row=week_num, column=day_num-1)
+# Проверяем, есть ли событие для этой даты
+                if self.check_event(day):
+                    star_label = tk.Label(self.calendar_frame, text="*", font=("Arial", 8, "bold"), fg="red", bg=bg_color)
+                    star_label.grid(row=week_num, column=day_num-1, sticky="se")  # Лепесток звездочки в правом нижнем углу ячейки
+    def check_event(self, day):
+        return day in [0, 0]
+    def prev_month(self):
+        self.current_date = self.current_date - datetime.timedelta(days=self.current_date.day)
+        self.update_calendar()
+    def next_month(self):
+        days_in_current_month = calendar.monthrange(self.current_date.year, self.current_date.month)[1]
+        self.current_date = self.current_date + datetime.timedelta(days=days_in_current_month)
+        self.update_calendar()
+    def add_event(self):
+        event_window = tk.Toplevel(self.window)
+        event_window.title("Добавить событие")
+# Создаем поле для ввода события
+        event_label = tk.Label(event_window, text="Событие:")
+        event_label.pack()
+        event_entry = tk.Entry(event_window, width=30)
+        event_entry.pack()
+# Создаем поле для выбора даты
+        date_label = tk.Label(event_window, text="Выберите дату:")
+        date_label.pack()
+        date_picker = DateEntry(event_window, width=12, background='darkblue', foreground='white', borderwidth=2)
+        date_picker.pack()
+# Кнопка для сохранения события
+        save_button = tk.Button(event_window, text="Сохранить", command=lambda: self.save_event(event_entry.get(), date_picker.get_date()))
+        save_button.pack()
+    def save_event(self, event, date):
+        print("Событие:", event)
+        print("Дата:", date)
+        print("Событие сохранено *")
+    def run(self):
+        self.window.mainloop()
+if __name__ == "__main__":
+    app = CalendarApp()
+    app.run()
